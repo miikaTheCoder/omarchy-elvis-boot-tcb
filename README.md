@@ -34,8 +34,11 @@ focus. There is no audio. Rendering windows exist only while an animation plays.
 - Bash and `jq` for installation
 
 This targets the newer Omarchy shell. The older Hyprlock and Waybar setup is not
-supported by this plugin. The vector artwork is bundled, so installation does
-not require the original photographs or any image processing tools.
+supported by this plugin. On current Omarchy releases, the TCB startup intro and
+manual preview work without access to the privileged lock service. The portrait
+sequence requires a shell version that exposes lock-state changes to the plugin.
+The vector artwork is bundled, so installation does not require the original
+photographs or any image processing tools.
 
 ## Install
 
@@ -56,10 +59,18 @@ and an existing TCB startup hook. It then installs:
 Backups live in `~/.config/omarchy/backups/elvis-unlock/`.
 Packaged Omarchy files and authentication settings are untouched.
 
-If the installer reports that the shell has cached the old QML code, run:
+The installer restarts the shell only when an older in-memory copy of the
+service is still loaded.
+
+If an Elvis command reports `Target not found.`, the service is installed but
+not loaded. Rescan and enable it, then retry the preview:
 
 ```bash
+omarchy shell shell rescanPlugins
+sleep 1
+omarchy plugin enable nextg.elvis-unlock
 omarchy restart shell
+omarchy shell elvis tcbPreview
 ```
 
 Installing, updating, or restarting the shell does not consume the next startup

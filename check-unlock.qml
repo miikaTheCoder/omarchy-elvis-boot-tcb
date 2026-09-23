@@ -9,6 +9,7 @@ ShellRoot {
     QtObject { id: lock; property bool locked: false }
     QtObject { id: mockShell; function serviceFor(id) { return lock } }
     Elvis.Service { id: service; shell: mockShell; portraitMs: 40; bootStatePath: "" }
+    Elvis.Service { id: tcbOnlyService; shell: null; portraitMs: 40; bootStatePath: "" }
     function check(condition, description) {
         console.log((condition ? "PASS " : "FAIL ") + description)
         if (!condition) failures++
@@ -21,6 +22,9 @@ ShellRoot {
             root.stage++
             if (root.stage === 1) {
                 root.check(!service.playing, "No animation on plugin load")
+                root.check(tcbOnlyService.playMode("tcb"), "TCB works without privileged lock-service access")
+                tcbOnlyService.stop()
+                root.check(!tcbOnlyService.play(), "Unlock portraits still require lock-service access")
                 lock.locked = true
                 root.check(!service.play(), "Manual preview refused while locked")
                 lock.locked = false

@@ -37,7 +37,11 @@ Item {
     }
 
     function playMode(mode) {
-        if (!lockService || lockService.locked) return false
+        // Current Omarchy shells intentionally do not expose the privileged
+        // lock service to ordinary third-party plugins. TCB is a startup/manual
+        // sequence and does not need that access; portraits still require it
+        // because they are specifically triggered by an observed unlock.
+        if ((mode !== "tcb" && !lockService) || (lockService && lockService.locked)) return false
         animation.stop()
         sequence = mode
         elapsed = 0
@@ -47,14 +51,14 @@ Item {
     }
 
     function scheduleBoot() {
-        if (bootPending && !bootConsumed && !bootClaiming && lockService && !lockService.locked)
+        if (bootPending && !bootConsumed && !bootClaiming && (!lockService || !lockService.locked))
             bootDelay.restart()
     }
 
     function reloadBootRequest() { bootState.reload() }
 
     function tryBoot() {
-        if (!bootPending || bootConsumed || bootClaiming || !lockService || lockService.locked)
+        if (!bootPending || bootConsumed || bootClaiming || (lockService && lockService.locked))
             return false
         if (!Quickshell.screens.length) return false
         // Persist consumption BEFORE showing the intro. Repeated hook calls,
@@ -180,7 +184,8 @@ Item {
             return JSON.stringify({playing: root.playing, hasLockService: !!root.lockService,
                 locked: !!root.lockService && root.lockService.locked,
                 portraitMs: root.portraitMs, order: [3, 2, 1], sequence: root.sequence,
-                bootPending: root.bootPending, bootConsumed: root.bootConsumed})
+                bootPending: root.bootPending, bootConsumed: root.bootConsumed,
+                version: root.manifest && root.manifest.version ? root.manifest.version : "development"})
         }
     }
 }
