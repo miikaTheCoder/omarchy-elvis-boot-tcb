@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Invoked only by Omarchy's post-boot hook, never by its unlock path.
+set -euo pipefail
+
+runtime_dir="${XDG_RUNTIME_DIR:?A desktop session runtime directory is required}"
+session_key="${HYPRLAND_INSTANCE_SIGNATURE:-${XDG_SESSION_ID:-${WAYLAND_DISPLAY:-desktop}}}"
+session_key="${session_key//[^a-zA-Z0-9_.-]/_}"
+state_dir="$runtime_dir/elvis-tcb-boot"
+state_file="$state_dir/$session_key.state"
+mkdir -p -m 700 "$state_dir"
+
+# Exclusive creation preserves both pending and consumed requests on reruns.
+(set -o noclobber; printf 'pending\n' > "$state_file") 2>/dev/null || true
+
+# The desktop and shell start concurrently. Retry briefly in the background so
+# other post-boot hooks can run. The durable request also survives shell reloads.
+(
+    for attempt in {1..30}; do
+        reply="$(omarchy shell elvis boot 2>/dev/null)" || reply=""
+        [[ "$reply" == checking ]] && exit 0
+        sleep 1
+    done
+) </dev/null >/dev/null 2>&1 &

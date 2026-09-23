@@ -1,0 +1,17 @@
+# Local agent state and Python bytecode.
+.agents/
+.codex/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Original photos are supplied separately.
+source-photos/
+
+# Keep the usable preview and release demos, not tracing crops or raw frames.
+/preview/*
+!/preview/template.html
+!/preview/index.html
+!/preview/elvis-sequence.mp4
+!/preview/tcb-boot-4k.mp4
+!/preview/tcb-boot-4k.png

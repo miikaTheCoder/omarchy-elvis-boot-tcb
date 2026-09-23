@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "nextg.elvis-unlock",
+  "name": "Elvis · The Prime Years",
+  "version": "1.1.1",
+  "author": "nextg",
+  "description": "A gold TCB lightning intro once at desktop startup; three traced Elvis portraits after subsequent unlocks, in order 3 → 2 → 1.",
+  "kinds": ["service"],
+  "keepLoaded": true,
+  "entryPoints": {"service": "Service.qml"}
+}
