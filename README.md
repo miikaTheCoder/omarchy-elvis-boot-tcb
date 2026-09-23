@@ -4,6 +4,7 @@
 
 A personal Elvis intro for Omarchy. A gold TCB lightning bolt opens each desktop
 session, and three vector portraits of Elvis draw themselves after later unlocks.
+An optional photo screensaver brings the original pictures to your idle desktop.
 
 ![Gold TCB startup emblem](preview/tcb-boot-4k.png)
 
@@ -97,6 +98,67 @@ Edit the files in `plugin/nextg.elvis-unlock/`, then rerun the installer.
 Standalone SVGs live in `assets/`. The TCB emblem is rendered directly from curves,
 with a separate halo during its brief highlight. It has no permanent blur layer.
 
+## Elvis photo screensaver
+
+The optional screensaver cycles through your original photographs in order
+**3 → 2 → 1**, changing every eight seconds with a 900 ms dissolve. Each monitor
+shows the same picture, fitted against black without cropping or added blur.
+Move the mouse, click, scroll, or press a key to close it. There is no audio.
+
+Install it using the directory containing the three original photo filenames:
+
+```bash
+python scripts/install_screensaver.py --photos-dir /path/to/your/elvis/photos
+omarchy restart shell
+```
+
+You can also supply any photos in your preferred playback order:
+
+```bash
+python scripts/install_screensaver.py /path/to/1970.jpg /path/to/1972.jpg /path/to/1973.jpg
+```
+
+The installer copies the photos into your personal Omarchy configuration. They
+are not included in this repository. It adds **Omarchy menu > Elvis Screensaver**:
+
+- **Preview** plays the photos immediately, even when Stay Awake is on.
+- **Enabled** toggles automatic photo playback. A check mark means on.
+
+**System > Elvis Screensaver** also previews it, and **Trigger > Toggle > Elvis
+Screensaver** uses the same switch. Turning off the screensaver does not disable
+automatic locking. **Stay Awake** is a separate Omarchy control that pauses both
+automatic screensaver and locking; the installer preserves its current setting.
+
+From a terminal:
+
+```bash
+~/.local/bin/elvis-screensaver --force
+~/.local/bin/elvis-screensaver --toggle
+~/.local/bin/elvis-screensaver --stop
+```
+
+The installer uses `omarchy plugin clone omarchy.idle`, then changes only the
+screensaver launch command in your clone. Omarchy still handles idle inhibition,
+window dismissal, the lock deadline, and waking. Existing timing settings remain
+unchanged, normally 150 seconds for the screensaver and 300 seconds for locking.
+The screensaver retains Omarchy's app ID so its normal lock command closes it.
+It is a screensaver, not a replacement for the lock screen.
+
+The photo renderer uses Quickshell's [application ID configuration](https://quickshell.org/docs/v0.3.0/guide/advanced/)
+and the fullscreen rules provided by the current Omarchy Hyprland setup.
+Installation requires Python 3 in addition to the normal plugin requirements.
+The originals retain their source resolution; they are not AI upscaled.
+
+Configuration lives in `~/.config/omarchy/elvis-screensaver/photos.json`.
+Change `intervalMs` to adjust pacing. Changes apply on the next launch.
+To update the screensaver code while keeping your photos and pacing, rerun
+`python scripts/install_screensaver.py` without photo arguments, then restart the
+shell. The installer backs up existing settings, photos, menu extensions, and
+the idle clone under `~/.config/omarchy/backups/elvis-screensaver/`.
+
+The idle clone is based on the Omarchy version installed when you first run the
+installer. Later Omarchy updates do not automatically update cloned service code.
+
 ## Disable
 
 Disable the whole plugin:
@@ -166,6 +228,7 @@ with manually drawn paths. The TCB SVG builder uses Node.js with no dependencies
 ```bash
 omarchy plugin validate plugin/nextg.elvis-unlock
 python scripts/check_boot_hook.py
+python scripts/check_screensaver.py
 quickshell -p "$PWD/check-unlock.qml"
 
 test_directory="$(mktemp -d /tmp/elvis-boot-test.XXXXXXXX)"

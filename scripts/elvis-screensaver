@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+config_dir="$HOME/.config/omarchy/elvis-screensaver"
+case "${1:-}" in
+    --toggle)
+        omarchy-toggle screensaver-off
+        if omarchy-toggle-enabled screensaver-off; then
+            quickshell ipc -p "$config_dir/org.omarchy.screensaver.qml" call screensaver stop >/dev/null 2>&1 || true
+            omarchy-notification-send -g 󱄄 "Elvis screensaver off"
+        else
+            omarchy-notification-send -g 󱄄 "Elvis screensaver on" "Stay Awake still controls automatic idle."
+        fi
+        exit 0
+        ;;
+    --stop)
+        exec quickshell ipc -p "$config_dir/org.omarchy.screensaver.qml" call screensaver stop
+        ;;
+    --force|"") ;;
+    *) echo "Usage: elvis-screensaver [--force|--stop|--toggle]" >&2; exit 2 ;;
+esac
+
+# Keep Omarchy's off switch and fail closed if the lock service is unavailable.
+if [[ ${1:-} != --force ]] && omarchy-toggle-enabled screensaver-off; then
+    exit 0
+fi
+[[ $(omarchy-shell lock isLocked) == false ]] || exit 0
+[[ -r "$config_dir/photos.json" ]] || { echo "Elvis photo settings are missing" >&2; exit 1; }
+
+# The app ID and filename match Omarchy's window tracking and lock-time cleanup.
+exec quickshell --no-duplicate -p "$config_dir/org.omarchy.screensaver.qml"
